@@ -21,13 +21,13 @@ class Logged
 
 		$client = new \GuzzleHttp\Client();
 
-        try {
-	        $response = $client->request('GET', env('CORE_URL')."/user/profile", [
-	            'headers' => [
+		try {
+			$response = $client->request('GET', env('CORE_URL')."/user/profile", [
+			    'headers' => [
 					'Authorization' => $request->headers->get('Authorization')
 				],
-	            'http_errors' => false
-	        ]);
+			    'http_errors' => false
+			]);
 
 			$response = json_decode($response->getBody());
 
@@ -42,9 +42,9 @@ class Logged
 			} else {
 				throw new \Exception();
 			}
-    	} catch (\Exception $e) {
-    		abort(401);
-    	}
+		} catch (\Exception $e) {
+			abort(401);
+		}
 
 	}
 }

@@ -154,9 +154,9 @@ abstract class Manager
 	  */
 	public function throwExceptionInvalidParamValue($name, $value, $accepted)
 	{
-	 if (is_array($accepted)) {
+		if (is_array($accepted)) {
 			if (!in_array($value, $accepted))
-	            throw new InvalidParamValueException("Invalid value {$value} for param {$name}. Accepted: ".implode($accepted, ","));
+		        throw new InvalidParamValueException("Invalid value {$value} for param {$name}. Accepted: ".implode($accepted, ","));
 		}
 	}
 
@@ -186,6 +186,6 @@ abstract class Manager
 	*/
 	public function getOnlyParams(array $params, array $requested)
 	{
-	  return (array_intersect_key($params, array_flip($requested)));
+		return (array_intersect_key($params, array_flip($requested)));
 	}
 }
