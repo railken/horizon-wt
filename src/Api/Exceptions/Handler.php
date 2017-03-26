@@ -2,7 +2,7 @@
 
 namespace Api\Exceptions;
 
-use EchoWine\Laravel\App\Exceptions\ExceptionHandler;
+use Railken\Laravel\App\Exceptions\ExceptionHandler;
 use Exception;
 
 class Handler extends ExceptionHandler{

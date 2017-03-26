@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Auth\AuthenticationException;
-use EchoWine\Laravel\App\Exceptions\Handler as ExceptionHandler;
+use Railken\Laravel\App\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
 {

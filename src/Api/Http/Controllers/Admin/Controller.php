@@ -4,9 +4,9 @@ namespace Api\Http\Controllers\Admin;
 
 use Api\Http\Controllers\Controller as BaseController;
 use Api\Helper\Paginator;
-use Core\Manager\ManagerEntityContract;
-use Core\Manager\Manager;
 
+
+use Railken\Laravel\Manager\ModelContract;
 use Illuminate\Http\Request;
 
 
@@ -33,11 +33,11 @@ abstract class Controller extends BaseController
 	/**
 	 * Return an array rappresentation of entity
 	 *
-	 * @param Core\Manager\ManagerEntityContract $entity
+	 * @param ModelContract $entity
 	 *
 	 * @return array
 	 */
-	public function serialize(ManagerEntityContract $entity)
+	public function serialize(ModelContract $entity)
 	{
 		return [
 			'id' => $entity->id,
@@ -80,8 +80,8 @@ abstract class Controller extends BaseController
 			->get();
 
 
-		foreach ($results as &$k) {
-			$k = $this->serialize($k);
+		foreach ($results as $n => $k) {
+			$results[$n] = $this->serialize($k);
 		}
 
 		return $this->success([

@@ -2,15 +2,14 @@
 
 namespace Core\User;
 
-use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-use Core\Manager\ManagerEntityContract;
+use Railken\Laravel\Manager\ModelContract;
 
-class User extends Authenticatable implements ManagerEntityContract
+class User extends Authenticatable implements ModelContract
 {
-    use HasApiTokens, Notifiable;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.

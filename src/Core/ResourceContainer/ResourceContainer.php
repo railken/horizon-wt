@@ -3,9 +3,9 @@
 namespace Core\ResourceContainer;
 
 use Illuminate\Database\Eloquent\Model;
-use Core\Manager\ManagerEntityContract;
+use Railken\Laravel\Manager\ModelContract;
 
-class ResourceContainer extends Model implements ManagerEntityContract
+class ResourceContainer extends Model implements ModelContract
 {
 
     /**

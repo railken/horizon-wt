@@ -2,12 +2,17 @@
 
 namespace Core\User;
 
-use Core\Manager\ModelRepository;
+use Railken\Laravel\Manager\ModelRepository;
 use Core\User\User;
 
 class UserRepository extends ModelRepository
 {
 
+	/**
+	 * Namespace user
+	 *
+	 * @var string
+	 */
 	public $entity = User::class;
 	
 	/**

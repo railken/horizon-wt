@@ -176,7 +176,8 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        EchoWine\Laravel\App\AppServiceProvider::class,
+        Railken\Laravel\App\AppServiceProvider::class,
+        Railken\Laravel\Manager\ManagerServiceProvider::class,
 
     ],
 

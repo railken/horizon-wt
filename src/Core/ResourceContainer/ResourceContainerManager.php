@@ -2,12 +2,12 @@
 
 namespace Core\ResourceContainer;
 
-use Core\Manager\Manager;
-use Core\Manager\ManagerEntityContract;
+use Railken\Laravel\Manager\ModelManager;
+use Railken\Laravel\Manager\ModelContract;
 
 use Core\ResourceContainer\ResourceContainerRepository;
 
-class ResourceContainerManager extends Manager
+class ResourceContainerManager extends ModelManager
 {
 
     /**
@@ -21,12 +21,12 @@ class ResourceContainerManager extends Manager
 	/**
 	 * Fill the entity
 	 *
-	 * @param ManagerEntityContract $entity
+	 * @param ModelContract $entity
 	 * @param array $params
 	 *
-	 * @return ManagerEntityContract
+	 * @return ModelContract
 	 */
-	public function fill(ManagerEntityContract $resource_container, array $params)
+	public function fill(ModelContract $resource_container, array $params)
 	{
 
 		$params = $this->getOnlyParams($params, ['resource_type', 'resource_id', 'database_name', 'database_id']);
@@ -43,11 +43,11 @@ class ResourceContainerManager extends Manager
 	/**
 	 * This will prevent from saving entity with null value
 	 *
-	 * @param ManagerEntityContract $entity
+	 * @param ModelContract $entity
 	 *
-	 * @return ManagerEntityContract
+	 * @return ModelContract
 	 */
-	public function save(ManagerEntityContract $entity)
+	public function save(ModelContract $entity)
 	{
 		$this->throwExceptionParamsNull([
 			'resource_id' => $entity->resource_id,
@@ -62,11 +62,11 @@ class ResourceContainerManager extends Manager
 	/**
 	 * To array
 	 *
-	 * @param Core\Manager\ManagerEntityContract $entity
+	 * @param ModelContract $entity
 	 *
 	 * @return array
 	 */
-	public function toArray(ManagerEntityContract $entity)
+	public function toArray(ModelContract $entity)
 	{
 		return [];
 	}

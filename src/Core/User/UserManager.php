@@ -11,28 +11,14 @@ use Core\User\Exceptions\MismatchRepeatPasswordException;
 
 use Core\Manager\Exceptions\InvalidValueParamException;
 
-use Core\User\User;
 use Core\User\UserRepository;
 
-use Core\Manager\Manager;
-use Core\Manager\ManagerEntityContract;
+use Railken\Laravel\Manager\ModelManager;
+use Railken\Laravel\Manager\ModelContract;
 
-class UserManager extends Manager
+
+class UserManager extends ModelManager
 {
-
-	/**
-	 * Entity class
-	 *
-	 * @var string
-	 */
-	protected $entity = User::class;
-
-    /**
-	 * Repository
-	 *
-     * @var UserRepository
-     */
-    protected $repository;
 
     /**
      * Construct
@@ -42,26 +28,15 @@ class UserManager extends Manager
         $this->repository = new UserRepository();
     }
 
-    /**
-     * Retrieve repository
-     *
-     * @return Repository
-     */
-    public function getRepository()
-    {
-        return $this->repository;
-    }
-
-
 	/**
 	 * Fill the entity
 	 *
-	 * @param ManagerEntityContract $entity
+	 * @param ModelContract $entity
 	 * @param array $params
 	 *
-	 * @return ManagerEntityContract
+	 * @return ModelContract
 	 */
-	public function fill(ManagerEntityContract $user, array $params)
+	public function fill(ModelContract $user, array $params)
 	{
 
 		$params = array_intersect_key($params, array_flip(['username', 'email', 'role']));
@@ -75,11 +50,11 @@ class UserManager extends Manager
 	/**
 	 * This will prevent from saving entity with null value
 	 *
-	 * @param ManagerEntityContract $entity
+	 * @param ModelContract $entity
 	 *
-	 * @return ManagerEntityContract
+	 * @return ModelContract
 	 */
-	public function save(ManagerEntityContract $entity)
+	public function save(ModelContract $entity)
 	{
 		$this->throwExceptionParamsNull([
 			'username' => $entity->username,
@@ -92,11 +67,11 @@ class UserManager extends Manager
 	/**
 	 * To array
 	 *
-	 * @param Core\Manager\ManagerEntityContract $entity
+	 * @param Core\Manager\ModelContract $entity
 	 *
 	 * @return array
 	 */
-	public function toArray(ManagerEntityContract $entity)
+	public function toArray(ModelContract $entity)
 	{
 		return [];
 	}
