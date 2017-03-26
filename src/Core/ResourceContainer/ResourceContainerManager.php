@@ -6,6 +6,8 @@ use Railken\Laravel\Manager\ModelManager;
 use Railken\Laravel\Manager\ModelContract;
 
 use Core\ResourceContainer\ResourceContainerRepository;
+use Core\Series\Series\SeriesManager;
+use Core\Manga\Manga\MangaManager;
 
 class ResourceContainerManager extends ModelManager
 {
@@ -16,6 +18,25 @@ class ResourceContainerManager extends ModelManager
     public function __construct()
     {
         $this->repository = new ResourceContainerRepository();
+    }
+
+    /**
+     * Retrieve resource manager given type
+     *
+     * @param string $type
+     *
+     * @return ModelManager
+     */
+    public function getResourceManagerByType($type)
+    {
+    	if ($type == 'series')
+			return new SeriesManager();
+		
+
+		if ($type == 'manga')
+			return new MangaManager();
+		
+
     }
 
 	/**
@@ -29,10 +50,50 @@ class ResourceContainerManager extends ModelManager
 	public function fill(ModelContract $resource_container, array $params)
 	{
 
-		$params = $this->getOnlyParams($params, ['resource_type', 'resource_id', 'database_name', 'database_id']);
+		$params = $this->getOnlyParams($params, ['resource_type', 'resource_id', 'database_name', 'database_id', 'name', 'overview', 'status']);
+
+		if (!$resource_container->resource) {
+
+			$rm = $this->getResourceManagerByType($params['resource_type']);
+			
+			$resource = $rm->getRepository()->newEntity();
+			$rm->fill($resource, $params);
+			//$rm->save($resource);
+			
+
+			// This sould not create the entity
+			//$resource = $rm->create($params);
+
+			
+		} else {
+			$resource = $resource_container->resource;
+
+			$rm = $this->getResourceManagerByType($resource_container->resource->type);
+
+			$resource = $rm->update($resource, $params);
+
+			$params['resource_type'] = $resource_container->resource->type;
+
+		}
+
+
+		// This will only be executed if all params are correct
+		$this->addQueue(function() use($resource, $resource_container) {
+			$resource->save();
+		});
+
+
+		# Remove All other params
+		# Note: A resource type cannot be changed
+		$params = $this->getOnlyParams($params, ['resource_type', 'database_name', 'database_id']);
 
 		// Based on resource_type and resource_id associate with correct model
 		// $this->throwExceptionMissingParam(['ResourceContainername', 'password', 'password_repeat', 'email'], $params);
+
+
+		$this->addQueue(function() use($resource_container, $resource, $rm) {
+			$resource_container->resource_id = $resource->id;
+		});
 
 		$resource_container->fill($params);
 
@@ -50,13 +111,13 @@ class ResourceContainerManager extends ModelManager
 	public function save(ModelContract $entity)
 	{
 		$this->throwExceptionParamsNull([
-			'resource_id' => $entity->resource_id,
-			'resource_type' => $entity->resource_type,
 			'database_name' => $entity->database_name,
 			'database_id'=> $entity->database_id,
 		]);
 
-		return parent::save($entity);
+		$this->executeQueue();
+
+		parent::save($entity);
 	}
 
 	/**
@@ -69,5 +130,23 @@ class ResourceContainerManager extends ModelManager
 	public function toArray(ModelContract $entity)
 	{
 		return [];
+	}
+
+	/**
+	 * Remove a ModelContract
+	 *
+	 * @param Railken\Laravel\Manager\ModelContract $entity
+	 *
+	 * @return void
+	 */
+	public function delete(ModelContract $entity)
+	{	
+
+		// First: delete the resource associated with it
+		$rm = $this->getResourceManagerByType($entity->resource->type);
+		$rm->delete($entity->resource);
+
+		// Now we can delete the container
+		$entity->delete();
 	}
 }

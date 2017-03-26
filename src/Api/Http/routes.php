@@ -53,6 +53,7 @@ Route::group(['middleware' => 'core-auth'], function () {
 	|
 	*/
 	Route::group(['middleware' => 'admin', 'prefix' => 'admin', 'namespace' => 'Admin'], function() {
-		admin_routes('resources_container', 'ResourceContainerController');
+		admin_routes('resources', 'ResourceContainerController');
+		admin_routes('series', 'SeriesController');
 	} );
 });

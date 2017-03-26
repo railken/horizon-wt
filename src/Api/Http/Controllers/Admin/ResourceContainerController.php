@@ -29,8 +29,15 @@ class ResourceContainerController extends Controller
 	{
 		return [
 			'id' => $entity->id,
-			'resource_type' => $entity->resource_type,
-			'resource_id' => $entity->resource_id,
+			'resource' => [
+				'id' => $entity->resource->id,
+				'type' => $entity->resource->type,
+				'name' => $entity->resource->name,
+				'overview' => $entity->resource->overview,
+				'status' => $entity->resource->status,
+				'created_at' => $entity->resource->created_at->format('Y-m-d H:i:s'),
+				'updated_at' => $entity->resource->updated_at->format('Y-m-d H:i:s')
+			],
 			'database_name' => $entity->database_name,
 			'database_id' => $entity->database_id,
 			'created_at' => $entity->created_at->format('Y-m-d H:i:s'),

@@ -110,12 +110,7 @@ abstract class Controller extends BaseController
 
 		$entity = $manager->create($request->all());
 
-		return $this->success([
-			'message' => 'ok',
-			'data' => [
-				'resource' => $this->serialize($entity)
-			]
-		]);
+		return $this->show($entity->id, $request);
 
 	}
 
@@ -164,12 +159,7 @@ abstract class Controller extends BaseController
 
 		$manager->update($entity, $request->all());
 
-		return $this->success([
-			'message' => 'ok',
-			'data' => [
-				'resource' => $this->serialize($entity)
-			]
-		]);
+		return $this->show($entity->id, $request);
 
 	}
 
