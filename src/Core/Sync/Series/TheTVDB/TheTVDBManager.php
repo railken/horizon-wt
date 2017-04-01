@@ -4,8 +4,11 @@ namespace Core\Sync\Series\TheTVDB;
 
 use Core\Series\Series\SeriesManager;
 use Core\ResourceContainer\ResourceContainerManager;
+use Core\ResourceContainer\ResourceContainer;
+
 use Component\Str;
 use Illuminate\Support\Facades\Cache;
+use Core\Tag\TagManager;
 
 class TheTVDBManager
 {
@@ -208,13 +211,50 @@ class TheTVDBManager
 
 		$params = $series->toArray();
 
+		# Resource and container
 		if (!$resource_container) {
-			$params['database_id'] = $series_id;
 			$params['resource_type'] = 'series';
 			$params['database_name'] = 'thetvdb';
-			$manager->create($params);
+			$params['database_id'] = $series_id;
+			$resource_container = $manager->create($params);
 		} else {
 			$manager->update($resource_container, $params);
 		}
+
+		# Tags
+		$this->syncTags($resource_container, $series);
+
+
+		# Actors
+
+		# Episodes
+
+		# Images
+	}
+
+	/**
+	 * Public function sync tags given series
+	 *
+	 * @param ResourceContainer $resource_container
+	 * @param Series $series
+	 *
+	 * @return void
+	 */
+	public function syncTags(ResourceContainer $resource_container, Series $series)
+	{
+
+		$tags = collect();
+
+		$manager = new TagManager();
+
+		foreach ((array)$series->tags as $tag) {
+			$tags[] = $manager->firstOrCreate([
+				'name' => $tag
+			]);
+		}
+
+		$resource_container->tags()->sync($tags->map(function($tag) {
+			return $tag->id;
+		}));
 	}
 }

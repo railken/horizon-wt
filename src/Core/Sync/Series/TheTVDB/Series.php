@@ -41,7 +41,7 @@ class Series extends BaseSeries
 		$series->id = $data->id;
 		$series->name = $data->seriesName;
 		$series->updated_at = (new DateTime())->setTimestamp($data->lastUpdated);
-
+		$series->tags = $data->genre;
 		return $series;
 	}
 

@@ -48,6 +48,8 @@ abstract class Series
 		if (!isset($this->{$attribute}) && isset($this->attributes[$attribute])) {
 			return $this->attributes[$attribute];
 		}
+
+		return null;
 	}
 
 	/**
@@ -67,8 +69,15 @@ abstract class Series
 	 */
 	public function isValid()
 	{
-		if (!$this->name || !$this->id)
-			return false;
+
+		$required = ['name', 'id'];
+
+		foreach ($required as $field) {
+			if (!$this->$field) {
+				return false;
+			}
+		}
+
 
 		return true;
 	}
