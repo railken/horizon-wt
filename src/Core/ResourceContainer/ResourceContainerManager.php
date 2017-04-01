@@ -76,11 +76,7 @@ class ResourceContainerManager extends ModelManager
 
 		}
 
-
-		// This will only be executed if all params are correct
-		$this->addQueue(function() use($resource, $resource_container) {
-			$resource->save();
-		});
+		$resource->save();
 
 
 		# Remove All other params
@@ -90,11 +86,7 @@ class ResourceContainerManager extends ModelManager
 		// Based on resource_type and resource_id associate with correct model
 		// $this->throwExceptionMissingParam(['ResourceContainername', 'password', 'password_repeat', 'email'], $params);
 
-
-		$this->addQueue(function() use($resource_container, $resource, $rm) {
-			$resource_container->resource_id = $resource->id;
-		});
-
+		$this->vars['resource'] = $resource;
 		$resource_container->fill($params);
 
 		return $resource_container;
@@ -116,6 +108,9 @@ class ResourceContainerManager extends ModelManager
 		]);
 
 		$this->executeQueue();
+
+
+		$entity->resource()->associate($this->vars['resource']);
 
 		parent::save($entity);
 	}

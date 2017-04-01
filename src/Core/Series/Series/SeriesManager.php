@@ -29,6 +29,7 @@ class SeriesManager extends ResourceManager
 	public function fill(ModelContract $entity, array $params)
 	{
 
+
 		return parent::fill($entity, $params);
 
 	}
@@ -41,7 +42,7 @@ class SeriesManager extends ResourceManager
 	 * @return ModelContract
 	 */
 	public function save(ModelContract $entity)
-	{
+	{	
 
 		return parent::save($entity);
 	}

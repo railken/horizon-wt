@@ -6,9 +6,10 @@
     "type": "project",
     "require": {
         "php": ">=5.6.4",
+        "doctrine/dbal": "^2.5",
+        "guzzlehttp/guzzle": "*",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
-        "guzzlehttp/guzzle": "*",
         "railken/laravel-application": "*@dev",
         "railken/laravel-manager": "*@dev"
     },

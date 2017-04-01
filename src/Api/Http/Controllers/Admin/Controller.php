@@ -109,7 +109,7 @@ abstract class Controller extends BaseController
 		$manager = $this->getManager();
 
 		$entity = $manager->create($request->all());
-
+		
 		return $this->show($entity->id, $request);
 
 	}
