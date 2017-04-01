@@ -45,4 +45,21 @@ class Series extends BaseSeries
 		return $series;
 	}
 
+	/**
+	 * Add episodes
+	 *
+	 * @param array $episodes
+	 *
+	 * @return this
+	 */
+	public function addEpisodes(array $episodes)
+	{
+
+		foreach ($episodes as $episode) {
+			$this->episodes[] = Episode::info($episode);
+		}
+
+		return $this;
+	}
+
 }

@@ -29,7 +29,7 @@ class EpisodeManager extends ModelManager
 	public function fill(ModelContract $entity, array $params)
 	{
 
-		$params = $this->getOnlyParams($params, ['name']);
+		$params = $this->getOnlyParams($params, ['name', 'overview', 'number', 'season_number', 'series_id', 'season_id', 'aired_at']);
 
 		$entity->fill($params);
 
@@ -47,7 +47,7 @@ class EpisodeManager extends ModelManager
 	public function save(ModelContract $entity)
 	{
 		$this->throwExceptionParamsNull([
-			'name' => $entity->name,
+			'number' => $entity->number,
 		]);
 
 		return parent::save($entity);

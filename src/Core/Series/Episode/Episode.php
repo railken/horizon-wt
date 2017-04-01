@@ -12,12 +12,19 @@ class Episode extends Model implements ModelContract
      *
      * @var string
      */
-    protected $table = 'episode';
+    protected $table = 'episodes';
+
+    /**
+     * The attribute dates
+     *
+     * @var array
+     */
+    protected $dates = ['aired_at'];
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = ['name', 'overview', 'number', 'season_number', 'series_id', 'season_id', 'aired_at'];
 }

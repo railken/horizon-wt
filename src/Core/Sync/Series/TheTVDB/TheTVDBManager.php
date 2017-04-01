@@ -2,9 +2,11 @@
 
 namespace Core\Sync\Series\TheTVDB;
 
-use Core\Series\Series\SeriesManager;
 use Core\ResourceContainer\ResourceContainerManager;
 use Core\ResourceContainer\ResourceContainer;
+
+use Core\Series\Series\SeriesManager;
+use Core\Series\Episode\EpisodeManager;
 
 use Component\Str;
 use Illuminate\Support\Facades\Cache;
@@ -177,15 +179,22 @@ class TheTVDBManager
 		$response = $this->client_2->get("/series/{$series_id}");
 		$series = json_decode($response->getBody());
 
-
-		//$response = $this->client_2->get("/series/{$series_id}/episodes");
-		//$episodes = json_decode($response->getBody());
-
-		//print_r($series);
-		//print_r($episodes);
-
 		$series = Series::info($series->data);
-		//$series->setEpisodes($episodes);
+
+		# Retrieve episodes
+		$next = 1;
+
+		do{	
+			$response = $this->client_2->get("/series/{$series_id}/episodes?page={$next}");
+			$body = json_decode($response->getBody());
+			$series->addEpisodes($body->data);
+			$next = $body->links->next;
+		} while($next != null);
+
+		# Retrieve actors
+
+		# Retrieve images
+
 
 		return $series;
 	}
@@ -202,9 +211,28 @@ class TheTVDBManager
 
 		$series = $this->get($series_id);
 
+		$resource_container = $this->syncResourceContainer($series);
+
+		$this->syncTags($resource_container, $series);
+		$this->syncActors($resource_container, $series);
+		$this->syncEpisodes($resource_container, $series);
+		$this->syncImages($resource_container, $series);
+
+	}
+
+
+	/**
+	 * Sync resource container
+	 *
+	 * @param Series $series
+	 *
+	 * @return ResourceContainer
+	 */
+	public function syncResourceContainer(Series $series)
+	{
 		$manager = $this->container_manager;
 
-		$resource_container = $manager->getRepository()->getQuery()->where(['database_name' => 'thetvdb', 'database_id' => $series_id])->first();
+		$resource_container = $manager->getRepository()->getQuery()->where(['database_name' => 'thetvdb', 'database_id' => $series->id])->first();
 
 		if (!$series->isValid())
 			return;
@@ -215,25 +243,18 @@ class TheTVDBManager
 		if (!$resource_container) {
 			$params['resource_type'] = 'series';
 			$params['database_name'] = 'thetvdb';
-			$params['database_id'] = $series_id;
+			$params['database_id'] = $series->id;
 			$resource_container = $manager->create($params);
 		} else {
 			$manager->update($resource_container, $params);
 		}
 
-		# Tags
-		$this->syncTags($resource_container, $series);
+		return $resource_container;
 
-
-		# Actors
-
-		# Episodes
-
-		# Images
 	}
 
 	/**
-	 * Public function sync tags given series
+	 * Sync tags given series
 	 *
 	 * @param ResourceContainer $resource_container
 	 * @param Series $series
@@ -256,5 +277,73 @@ class TheTVDBManager
 		$resource_container->tags()->sync($tags->map(function($tag) {
 			return $tag->id;
 		}));
+
+	}
+
+	/**
+	 * Sync actors
+	 *
+	 * @param ResourceContainer $resource_container
+	 * @param Series $series
+	 *
+	 * @return void
+	 */
+	public function syncActors(ResourceContainer $resource_container, Series $series)
+	{
+
+	}
+
+	/**
+	 * Sync episodes
+	 *
+	 * @param ResourceContainer $resource_container
+	 * @param Series $series
+	 *
+	 * @return void
+	 */
+	public function syncEpisodes(ResourceContainer $resource_container, Series $series)
+	{
+		$episodes = collect();
+
+		$manager = new EpisodeManager();
+
+		foreach ($series->episodes as $raw_episode) {
+			$episode = $manager->findOrCreate([
+				'number' => $raw_episode->number,
+				'series_id' => $resource_container->resource->id
+			]);
+
+			$manager->fill($episode, $raw_episode->toArray());
+			$manager->save($episode);
+
+
+			$episodes[] = $episode->id;
+		}
+
+		if ($episodes->count() == 0)
+			return;
+
+
+		$manager
+			->getRepository()
+			->getQuery()
+			->where('series_id', $resource_container->resource->id)
+			->whereNotIn('id', $episodes)
+			->delete();
+
+
+	}
+
+	/**
+	 * Sync images
+	 *
+	 * @param ResourceContainer $resource_container
+	 * @param Series $series
+	 *
+	 * @return void
+	 */
+	public function syncImages(ResourceContainer $resource_container, Series $series)
+	{
+		
 	}
 }
