@@ -27,4 +27,23 @@ class SeriesCollection extends BaseSeriesCollection
 
 	}
 
+	/**
+	 * Convert array
+	 *
+	 * @param array $data
+	 *
+	 * @return this
+	 */
+	public static function info($data)
+	{
+
+		$r = collect();
+
+		foreach ($data as $serie) {
+			$r[] = Series::info($serie);
+		}
+
+		return $r;
+
+	}
 }

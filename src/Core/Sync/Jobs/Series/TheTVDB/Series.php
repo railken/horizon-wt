@@ -40,8 +40,11 @@ class Series implements ShouldQueue
     {
 
         $manager = new TheTVDBManager();
-        $manager->sync($this->id);
+        $results = $manager->sync($this->id);
 
+        if (!$results)
+            return;
+        
         foreach ($manager->getMedia($this->id) as $media) {
 
             dispatch((new Media($this->id, $media->type, $media->path))->onQueue('sync.resources.media'));

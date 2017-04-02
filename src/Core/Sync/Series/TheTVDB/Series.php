@@ -39,9 +39,9 @@ class Series extends BaseSeries
 		$series = new static;
 
 		$series->id = $data->id;
-		$series->name = $data->seriesName;
+		$series->name = $data->seriesName ?? null;
 		$series->updated_at = (new DateTime())->setTimestamp($data->lastUpdated);
-		$series->tags = $data->genre;
+		$series->tags = $data->genre ?? null;
 		return $series;
 	}
 

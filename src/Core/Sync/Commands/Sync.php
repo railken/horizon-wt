@@ -45,7 +45,6 @@ class Sync extends Command
     public function handle()
     {  
         
-        
         dispatch((new SyncSeries())->onQueue('sync.resources'));
         // dispatch((new SyncManga()->onQueue('sync.resources'));
         $this->info('Added to queue');

@@ -153,13 +153,23 @@ class TheTVDBManager
 	public function latest()
 	{
 
+		$this->authenticate();
+
 		$last_updated_at = Cache::get('sync.resources.thetvdb.updated_at');
 
 		if (!$last_updated_at) {
 			$last_updated_at = time()-3600*24;
 		}
 
-		Cache::set('sync.resources.thetvdb.updated_at', $last_updated_at);
+		Cache::put('sync.resources.thetvdb.updated_at', $last_updated_at);
+
+		// 1. Request updates
+		$now = time();
+		$response = $this->client_2->get("/updated/query?fromTime={$last_updated_at}&toTime={$now}");
+		$body = json_decode($response->getBody());
+
+		return SeriesCollection::info($body->data);
+
 	}
 
 	/** 
@@ -211,70 +221,14 @@ class TheTVDBManager
 
 		$resource_container = $this->syncResourceContainer($series);
 
+		if (!$resource_container)
+			return false;
+
 		$this->syncTags($resource_container, $series);
 		$this->syncActors($resource_container, $series);
 		$this->syncEpisodes($resource_container, $series);
 
-	}
-
-
-	/**
-	 * Retrieve images 
-	 *
-	 * @param integer $series_id
-	 *
-	 * @return boolean
-	 */
-	public function getMedia($series_id)
-	{
-
-		$this->authenticate();
-		$media = [];
-
-		# Retrieve images
-		foreach (['poster', 'fanart', 'poster'] as $image) { // poster, series, images
-			$response = $this->client_2->get("/series/{$series_id}/images/query?keyType={$image}");
-			$body = json_decode($response->getBody());
-
-			foreach ($body->data as $img) {
-				$media[] = Media::info($img);
-			}
-		} 
-
-		return $media;
-
-	}
-
-	/**
-	 * Sync media
-	 *
-	 * @param integer $series_id
-	 * @param integer $media_url
-	 *
-	 * @return boolean
-	 */
-	public function syncMedia($series_id, $media_type, $media_url)
-	{
-		
-		$rm = $this->container_manager;
-		$resource_container = $rm->getRepository()->getQuery()->where(['database_name' => 'thetvdb', 'database_id' => $series_id])->first();
-
-		$mm = new MediaManager();
-		$media = $mm->findOrCreate(['type' => $media_type, 'source' => $media_url]);
-
-		$response = $this->client_1->head("/banners/".$media_url);
-		$headers = $response->getHeaders();
-		$media_length = $headers['Content-Length'][0];
-		# Start to save only if content-length is different 
-
-		if ($media->length != $media_length) {
-			$extension = pathinfo($media_url, PATHINFO_EXTENSION);
-			$tmp = tmpfile();
-			$response = $this->client_1->get("/banners/".$media_url, ['sink' => $tmp]);
-			$mm->upload($media, stream_get_meta_data($tmp)['uri'], $extension);
-			$mm->update($media, ['type' => $media_type,'length' => $media_length]);
-			$resource_container->media()->syncWithoutDetaching([$media->id]);
-		}
+		return true;
 
 	}
 
@@ -291,10 +245,14 @@ class TheTVDBManager
 
 		$resource_container = $manager->getRepository()->getQuery()->where(['database_name' => 'thetvdb', 'database_id' => $series->id])->first();
 
+		if ($resource_container && $series->updated_at <= $resource_container->database_updated_at)
+			return null;
+
 		if (!$series->isValid())
-			return;
+			return null;
 
 		$params = $series->toArray();
+		$params['database_updated_at'] = $series->updated_at;
 
 		# Resource and container
 		if (!$resource_container) {
@@ -391,4 +349,63 @@ class TheTVDBManager
 
 	}
 
+	/**
+	 * Retrieve images 
+	 *
+	 * @param integer $series_id
+	 *
+	 * @return boolean
+	 */
+	public function getMedia($series_id)
+	{
+
+		$this->authenticate();
+		$media = [];
+
+		# Retrieve images
+		foreach (['poster', 'fanart', 'poster'] as $image) { // poster, series, images
+			$response = $this->client_2->get("/series/{$series_id}/images/query?keyType={$image}");
+			$body = json_decode($response->getBody());
+
+			foreach ($body->data as $img) {
+				$media[] = Media::info($img);
+			}
+		} 
+
+		return $media;
+
+	}
+
+	/**
+	 * Sync media
+	 *
+	 * @param integer $series_id
+	 * @param integer $media_url
+	 *
+	 * @return boolean
+	 */
+	public function syncMedia($series_id, $media_type, $media_url)
+	{
+		
+		$rm = $this->container_manager;
+		$resource_container = $rm->getRepository()->getQuery()->where(['database_name' => 'thetvdb', 'database_id' => $series_id])->first();
+
+		$mm = new MediaManager();
+		$media = $mm->findOrCreate(['type' => $media_type, 'source' => $media_url]);
+
+		$response = $this->client_1->head("/banners/".$media_url);
+		$headers = $response->getHeaders();
+		$media_length = $headers['Content-Length'][0];
+		# Start to save only if content-length is different 
+
+		if ($media->length != $media_length) {
+			$extension = pathinfo($media_url, PATHINFO_EXTENSION);
+			$tmp = tmpfile();
+			$response = $this->client_1->get("/banners/".$media_url, ['sink' => $tmp]);
+			$mm->upload($media, stream_get_meta_data($tmp)['uri'], $extension);
+			$mm->update($media, ['type' => $media_type,'length' => $media_length]);
+			$resource_container->media()->syncWithoutDetaching([$media->id]);
+		}
+
+	}
 }
