@@ -36,9 +36,6 @@ class SeriesCollection implements ShouldQueue
 
         foreach ($manager->toUpdate() as $series) {
             dispatch((new Series($series->id))->onQueue('sync.resources'));
-
-
-            die();
         }
     }
 }

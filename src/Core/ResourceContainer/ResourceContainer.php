@@ -8,6 +8,7 @@ use Railken\Laravel\Manager\ModelContract;
 use Core\Series\Series\Series;
 use Core\Manga\Manga\Manga;
 use Core\Tag\Tag;
+use Core\Media\Media;
 
 class ResourceContainer extends Model implements ModelContract
 {
@@ -44,6 +45,16 @@ class ResourceContainer extends Model implements ModelContract
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'resource_containers_tags', 'resource_container_id', 'tag_id');
+    }
+    
+    /**
+     * Get media
+     *
+     * @return Relation
+     */
+    public function media()
+    {
+        return $this->belongsToMany(Media::class, 'resource_containers_media', 'resource_container_id', 'media_id');
     }
 
     /**

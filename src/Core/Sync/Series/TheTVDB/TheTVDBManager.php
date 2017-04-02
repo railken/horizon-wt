@@ -8,6 +8,8 @@ use Core\ResourceContainer\ResourceContainer;
 use Core\Series\Series\SeriesManager;
 use Core\Series\Episode\EpisodeManager;
 
+use Core\Media\MediaManager;
+
 use Component\Str;
 use Illuminate\Support\Facades\Cache;
 use Core\Tag\TagManager;
@@ -37,12 +39,15 @@ class TheTVDBManager
 	 */
 	public function initialize()
 	{
+
+
 		$this->client_1 = new \GuzzleHttp\Client(['base_uri' => env('THETVDB_API_V1_URL')]);
 
 		$this->client_2 = new \GuzzleHttp\Client([
 			'headers' => [
 				'Content-Type' => 'application/json',
-				'Authorization' => 'Bearer '.Cache::get('sync.resources.thetvdb.access_token')
+				'Authorization' => 'Bearer '.Cache::get('sync.resources.thetvdb.access_token'),
+				'Accepted-Language' => 'en'
 			], 
 			'base_uri' => env('THETVDB_API_V2_URL')
 		]);
@@ -57,12 +62,6 @@ class TheTVDBManager
 	{
 		
 		if (!$token = Cache::get('sync.resources.thetvdb.access_token')) {
-
-			print_r(json_encode([
-				'apikey' => $this->token,
-				'userkey' => env('THETVDB_TOKEN_USER'),
-				'username' => env('THETVDB_USERNAME'),
-			]));
 
 			$response = $this->client_2->post("/login", ['json' => [
 				'apikey' => $this->token,
@@ -193,11 +192,10 @@ class TheTVDBManager
 
 		# Retrieve actors
 
-		# Retrieve images
-
 
 		return $series;
 	}
+
 
 	/** 
 	 * Retrieve all information about a series
@@ -216,10 +214,69 @@ class TheTVDBManager
 		$this->syncTags($resource_container, $series);
 		$this->syncActors($resource_container, $series);
 		$this->syncEpisodes($resource_container, $series);
-		$this->syncImages($resource_container, $series);
 
 	}
 
+
+	/**
+	 * Retrieve images 
+	 *
+	 * @param integer $series_id
+	 *
+	 * @return boolean
+	 */
+	public function getMedia($series_id)
+	{
+
+		$this->authenticate();
+		$media = [];
+
+		# Retrieve images
+		foreach (['poster', 'fanart', 'poster'] as $image) { // poster, series, images
+			$response = $this->client_2->get("/series/{$series_id}/images/query?keyType={$image}");
+			$body = json_decode($response->getBody());
+
+			foreach ($body->data as $img) {
+				$media[] = Media::info($img);
+			}
+		} 
+
+		return $media;
+
+	}
+
+	/**
+	 * Sync media
+	 *
+	 * @param integer $series_id
+	 * @param integer $media_url
+	 *
+	 * @return boolean
+	 */
+	public function syncMedia($series_id, $media_type, $media_url)
+	{
+		
+		$rm = $this->container_manager;
+		$resource_container = $rm->getRepository()->getQuery()->where(['database_name' => 'thetvdb', 'database_id' => $series_id])->first();
+
+		$mm = new MediaManager();
+		$media = $mm->findOrCreate(['type' => $media_type, 'source' => $media_url]);
+
+		$response = $this->client_1->head("/banners/".$media_url);
+		$headers = $response->getHeaders();
+		$media_length = $headers['Content-Length'][0];
+		# Start to save only if content-length is different 
+
+		if ($media->length != $media_length) {
+			$extension = pathinfo($media_url, PATHINFO_EXTENSION);
+			$tmp = tmpfile();
+			$response = $this->client_1->get("/banners/".$media_url, ['sink' => $tmp]);
+			$mm->upload($media, stream_get_meta_data($tmp)['uri'], $extension);
+			$mm->update($media, ['type' => $media_type,'length' => $media_length]);
+			$resource_container->media()->syncWithoutDetaching([$media->id]);
+		}
+
+	}
 
 	/**
 	 * Sync resource container
@@ -334,16 +391,4 @@ class TheTVDBManager
 
 	}
 
-	/**
-	 * Sync images
-	 *
-	 * @param ResourceContainer $resource_container
-	 * @param Series $series
-	 *
-	 * @return void
-	 */
-	public function syncImages(ResourceContainer $resource_container, Series $series)
-	{
-		
-	}
 }

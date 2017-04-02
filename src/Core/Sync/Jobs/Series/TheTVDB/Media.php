@@ -18,17 +18,35 @@ class Series implements ShouldQueue
 
     /**
      * ID
+     *
+     * @var integer
      */
     protected $id;
+
+    /**
+     * Type of media
+     *
+     * @var string
+     */
+    protected $type;
+
+    /**
+     * Url media
+     *
+     * @var string
+     */
+    protected $path;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($id)
+    public function __construct($series_id, $type, $path)
     {
-        $this->id = $id;
+        $this->series_id = $series_id;
+        $this->type = $type;
+        $this->path = $path;
     }
 
     /**
@@ -40,12 +58,7 @@ class Series implements ShouldQueue
     {
 
         $manager = new TheTVDBManager();
-        $manager->sync($this->id);
-
-        foreach ($manager->getMedia($this->id) as $media) {
-
-            dispatch((new Media($this->id, $media->type, $media->path))->onQueue('sync.resources'));
-        }
+        $manager->syncMedia($this->series_id, $this->type, $this->path);
 
     }
 }

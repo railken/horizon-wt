@@ -45,9 +45,6 @@ class Sync extends Command
     public function handle()
     {  
         
-        // Testing 
-        (new TheTVDBManager())->sync(78804);
-        return;
         
         dispatch((new SyncSeries())->onQueue('sync.resources'));
         // dispatch((new SyncManga()->onQueue('sync.resources'));
