@@ -69,4 +69,14 @@ class Controller extends AppController{
         $response -> header('Content-Type', 'application/json');
         return $response;
     }
+
+    /**
+     * Get user
+     *
+     * @return User
+     */
+    public function getUser()
+    {
+        return \Auth::user();
+    }
 }

@@ -56,6 +56,7 @@ class ResourceContainer extends Model implements ModelContract
     {
         return $this->belongsToMany(Media::class, 'resource_containers_media', 'resource_container_id', 'media_id');
     }
+ 
 
     /**
      * Get type morph resource
@@ -83,4 +84,12 @@ class ResourceContainer extends Model implements ModelContract
         $this->attributes['resource_type'] = array_search($type, $this->types);
     }
 
+    /**
+     * Get type
+     *
+     * @return string
+     */
+    public function getTypeAttribute() {
+        return $this->getOriginal('resource_type');
+    }
 }

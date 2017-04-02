@@ -41,8 +41,18 @@ if (!function_exists('admin_routes')) {
 |
 */
 Route::group(['middleware' => 'core-auth'], function () {
-	Route::get('/user/profile', ['uses' => 'User\ProfileController@index']);
 
+	Route::group(['prefix' => 'user'], function() {
+
+		Route::get('/profile', ['uses' => 'User\ProfileController@index']);
+
+		Route::group(['prefix' => 'library'], function() {
+			Route::get('/', ['uses' => 'User\LibraryController@index']);
+			Route::post('/{id}', ['uses' => 'User\LibraryController@update']);
+			Route::delete('/{id}', ['uses' => 'User\LibraryController@delete']);
+		});
+
+	});
 
 	/*
 	|--------------------------------------------------------------------------
@@ -59,5 +69,7 @@ Route::group(['middleware' => 'core-auth'], function () {
 		Route::group(['prefix' => 'sync'], function() {
 			Route::post('/', ['uses' => 'Admin\SyncController@index']);
 		});
+
 	} );
+
 });
