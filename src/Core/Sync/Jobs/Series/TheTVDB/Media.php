@@ -11,7 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Core\Sync\Series\TheTVDB\TheTVDBManager;
 
 
-class Series implements ShouldQueue
+class Media implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -21,7 +21,7 @@ class Series implements ShouldQueue
      *
      * @var integer
      */
-    protected $id;
+    protected $series_id;
 
     /**
      * Type of media

@@ -44,7 +44,7 @@ class Series implements ShouldQueue
 
         foreach ($manager->getMedia($this->id) as $media) {
 
-            dispatch((new Media($this->id, $media->type, $media->path))->onQueue('sync.resources'));
+            dispatch((new Media($this->id, $media->type, $media->path))->onQueue('sync.resources.media'));
         }
 
     }
