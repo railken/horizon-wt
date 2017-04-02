@@ -15,20 +15,32 @@ class Series implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-
     /**
-     * ID
+     * Series id
+     *
+     * @var id
      */
     protected $id;
 
     /**
+     * Force sync
+     *
+     * @var boolean
+     */
+    protected $force;
+
+    /**
      * Create a new job instance.
+     *
+     * @param integer $id
+     * @param boolean $force
      *
      * @return void
      */
-    public function __construct($id)
+    public function __construct($id, $force = false)
     {
         $this->id = $id;
+        $this->force = $force;
     }
 
     /**
@@ -40,11 +52,11 @@ class Series implements ShouldQueue
     {
 
         $manager = new TheTVDBManager();
-        $results = $manager->sync($this->id);
+        $results = $manager->sync($this->id, $this->force);
 
         if (!$results)
             return;
-        
+
         foreach ($manager->getMedia($this->id) as $media) {
 
             dispatch((new Media($this->id, $media->type, $media->path))->onQueue('sync.resources.media'));

@@ -16,13 +16,20 @@ class SyncSeries implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * Force sync
+     *
+     * @var boolean
+     */
+    protected $force;
+
+    /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($force = false)
     {
-        //
+        $this->force = $force;
     }
 
     /**
@@ -32,6 +39,6 @@ class SyncSeries implements ShouldQueue
      */
     public function handle()
     {
-        dispatch((new TheTVDB\SeriesCollection())->onQueue('sync.resources'));
+        dispatch((new TheTVDB\SeriesCollection($this->force))->onQueue('sync.resources'));
     }
 }

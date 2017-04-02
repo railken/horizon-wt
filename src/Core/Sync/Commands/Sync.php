@@ -17,7 +17,7 @@ class Sync extends Command
      *
      * @var string
      */
-    protected $signature = 'core:sync:update';
+    protected $signature = 'core:sync:update {--force}';
 
     /**
      * The console command description.
@@ -45,7 +45,7 @@ class Sync extends Command
     public function handle()
     {  
         
-        dispatch((new SyncSeries())->onQueue('sync.resources'));
+        dispatch((new SyncSeries($this->option('force')))->onQueue('sync.resources'));
         // dispatch((new SyncManga()->onQueue('sync.resources'));
         $this->info('Added to queue');
     }

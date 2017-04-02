@@ -14,15 +14,21 @@ class SeriesCollection implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * Force sync
+     *
+     * @var boolean
+     */
+    protected $force;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($force = false)
     {
-
+        $this->force = $force;
     }
 
     /**
@@ -34,8 +40,8 @@ class SeriesCollection implements ShouldQueue
     {
         $manager = new TheTVDBManager();
 
-        foreach ($manager->toUpdate() as $series) {
-            dispatch((new Series($series->id))->onQueue('sync.resources'));
+        foreach ($manager->toUpdate($this->force) as $series) {
+            dispatch((new Series($series->id, $this->force))->onQueue('sync.resources'));
         }
     }
 }

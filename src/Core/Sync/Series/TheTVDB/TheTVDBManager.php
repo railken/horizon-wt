@@ -17,6 +17,7 @@ use Core\Tag\TagManager;
 class TheTVDBManager
 {
 
+	
 	/**
 	 * Construct
 	 */
@@ -82,16 +83,18 @@ class TheTVDBManager
 	/**
 	 * Sync with api/db
 	 *
+	 * @param boolean $force
+	 *
 	 * @return Collection
 	 */
-	public function toUpdate()
+	public function toUpdate($force = false)
 	{
 
 		// Retrieved one series
 		$series = $this->manager->getRepository()->getQuery()->first();
 
 		// If no series is retrieved, than it's the first sync
-		if (!$series)
+		if ($force || !$series)
 			return $this->all();
 
 		return $this->latest();
@@ -211,15 +214,16 @@ class TheTVDBManager
 	 * Retrieve all information about a series
 	 *
 	 * @param integer $series_id
+	 * @param boolean $force
 	 *
 	 * @return boolean
 	 */
-	public function sync($series_id)
+	public function sync($series_id, $force = false)
 	{
 
 		$series = $this->get($series_id);
 
-		$resource_container = $this->syncResourceContainer($series);
+		$resource_container = $this->syncResourceContainer($series, $force);
 
 		if (!$resource_container)
 			return false;
@@ -236,16 +240,17 @@ class TheTVDBManager
 	 * Sync resource container
 	 *
 	 * @param Series $series
+	 * @param boolean $force
 	 *
 	 * @return ResourceContainer
 	 */
-	public function syncResourceContainer(Series $series)
+	public function syncResourceContainer(Series $series, $force = false)
 	{
 		$manager = $this->container_manager;
 
 		$resource_container = $manager->getRepository()->getQuery()->where(['database_name' => 'thetvdb', 'database_id' => $series->id])->first();
 
-		if ($resource_container && $series->updated_at <= $resource_container->database_updated_at)
+		if (!$force && ($resource_container && $series->updated_at <= $resource_container->database_updated_at))
 			return null;
 
 		if (!$series->isValid())
